@@ -6,50 +6,48 @@ import 'package:flutter_task/app/utils/common_url.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-class HomeController extends GetxController{
+class HomeController extends GetxController {
+  final scrollerController = ScrollController();
 
-  final scrollerController  = ScrollController();
   RxList<Images> taskList = <Images>[].obs;
   int page = 1;
-  bool isLoadingMore = false;
+  RxBool isLoadingMore = false.obs;
   RxBool isLoading = false.obs;
+  bool noMoreData = false;
 
   fetchInfo() async {
-  final response = await http.get(Uri.parse('https://staging.codefruits.in/gwbit/?page=1&page=$page'),
-  headers: {
-    'Authorization' : ApiEndPoint.token
-  });
-  isLoading.value = true;
-  if(response.statusCode == 200) {
-    final taskResponse = HomeModel.fromJson(json.decode(response.body));
+    if (!isLoadingMore.value) {
+      isLoading.value = true;
+    }
+    final response = await http.get(
+        Uri.parse('${ApiEndPoint.baseUrlWithParam}$page'),
+        headers: {'Authorization': ApiEndPoint.token});
     isLoading.value = false;
-    //taskList.clear();
-    taskList.addAll(taskResponse.images ?? []);
-    taskList = taskList + (taskResponse.images ?? []);
-  }else{
-    print("Something bad");
-  }
-
+    if (response.statusCode == 200) {
+      final taskResponse = HomeModel.fromJson(json.decode(response.body));
+      taskList.addAll(taskResponse.images ?? []);
+    } else {
+      if (page >= 3) {
+        noMoreData = true;
+      }
+    }
   }
 
   @override
   void onInit() {
     super.onInit();
     fetchInfo();
-    scrollerController.addListener(_scrollListner);
+    scrollerController.addListener(_scrollListener);
   }
 
-  Future<void> _scrollListner()async{
-    if(isLoadingMore) return;
-    if(scrollerController.position.pixels == scrollerController.position.maxScrollExtent){
-      isLoadingMore = true;
+  Future<void> _scrollListener() async {
+    if (isLoadingMore.value || noMoreData) return;
+    if (scrollerController.position.pixels + 50 >=
+        scrollerController.position.maxScrollExtent) {
+      isLoadingMore.value = true;
       page = page + 1;
       await fetchInfo();
-      print('call');
-      isLoadingMore = false;
-    }else{
-      print('dont call');
+      isLoadingMore.value = false;
     }
-    //print('scroll listener is working');
   }
 }

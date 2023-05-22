@@ -6,5 +6,8 @@ abstract class AppColors{
   static const greyText = Color(0xFF888686);
   static const shadowCard = Color(0xFFfdfdfd);
   static const whiteText = Color(0xFFFFFFFF);
+  static const gradientStartColor = Color(0xCC000000);
+  static const gradientEndColor = Color(0x4D000000);
+
 }
 

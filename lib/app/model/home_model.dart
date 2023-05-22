@@ -71,6 +71,13 @@ class Images {
         wbi?.add(Wbi.fromJson(v));
       });
     }
+
+    if (json['timageid'] != null) {
+      timageid = [];
+      json['timageid'].forEach((v) {
+        timageid?.add(v);
+      });
+    }
     longitude = json['longitude'];
     latitude = json['latitude'];
     likeorunlike = json['likeorunlike'];
